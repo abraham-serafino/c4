@@ -22,14 +22,14 @@ int main () {
     exceptionHandler = &handleException;
 
     for (var i = 5; i > 0; --i) {
-        newStoreItem(natural, &store, &i);
+        newStoreItem(&store, int, &i);
     }
 
     for (var j = 0; j < store.size; ++j) {
         var item = getStoreItem(&store, j);
 
         if (! isNull(item)) {
-            printf("%d\n", $(natural, item));
+            printf("%d\n", $(int, item));
         }
     }
 

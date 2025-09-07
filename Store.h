@@ -25,7 +25,7 @@ _Boxed* _newStoreItem (Store* store, ptr item, natural size);
 _Boxed* _getStoreItem (Store* store, natural index);
 boolean deleteStore (Store* store);
 
-#define newStoreItem(T, store, item) _newStoreItem(store, item, sizeof(T))
+#define newStoreItem(store, T, item) _newStoreItem(store, item, sizeof(T))
 #define getStoreItem(store, index) _getStoreItem(store, index)
 
 #endif // _C4_STORE_H
