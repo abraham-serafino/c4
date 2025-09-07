@@ -21,11 +21,11 @@ object (Store) {
 };
 
 Store newStore ();
-_Boxed* _newStoreItem (Store* store, ptr item, natural size);
+_Boxed* _newStoreItem (Store* store, ptr value, natural size);
 _Boxed* _getStoreItem (Store* store, natural index);
 boolean deleteStore (Store* store);
 
-#define newStoreItem(store, T, item) _newStoreItem(store, item, sizeof(T))
+#define newStoreItem(store, T, value) _newStoreItem(store, &((T) value), sizeof(T))
 #define getStoreItem(store, index) _getStoreItem(store, index)
 
 #endif // _C4_STORE_H

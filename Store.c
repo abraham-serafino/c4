@@ -6,12 +6,12 @@ Store newStore () {
     return (Store) { .size = 0, .firstItem = NULL };
 }
 
-_Boxed* _newStoreItem (Store* store, ptr item, natural size) {
+_Boxed* _newStoreItem (Store* store, ptr value, natural size) {
     if (store == NULL) {
         throwException(NULL_STORE_EX);
     }
 
-    if (item == NULL) {
+    if (value == NULL) {
         throwException(NULL_VALUE_EX);
     }
 
@@ -21,7 +21,7 @@ _Boxed* _newStoreItem (Store* store, ptr item, natural size) {
         throwException(ITEM_ALLOC_EX);
     }
 
-    _Boxed* data = _new(size, item);
+    _Boxed* data = _new(size, value);
 
     if (data == NULL || (*data).value == NULL) {
         throwException(ITEM_ALLOC_EX);

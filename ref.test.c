@@ -15,6 +15,8 @@ int main() {
     int cleanup (int returnValue) {
         delete (price);
         delete (alice);
+        exceptionHandler = NULL;
+
         return returnValue;
     }
 

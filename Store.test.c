@@ -9,6 +9,7 @@ int main () {
 
     int cleanup (int returnValue) {
         deleteStore(&store);
+        exceptionHandler = NULL;
         return returnValue;
     }
 
@@ -22,7 +23,7 @@ int main () {
     exceptionHandler = &handleException;
 
     for (var i = 5; i > 0; --i) {
-        newStoreItem(&store, int, &i);
+        newStoreItem(&store, int, {i});
     }
 
     for (var j = 0; j < store.size; ++j) {
