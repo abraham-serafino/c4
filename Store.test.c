@@ -6,7 +6,6 @@ extern ExceptionHandler exceptionHandler;
 int main () {
 
     var store = newStore();
-    var value = (natural*) NULL;
 
     int cleanup (int returnValue) {
         deleteStore(&store);
