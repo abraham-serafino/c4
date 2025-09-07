@@ -2,7 +2,7 @@
 
 extern ExceptionHandler exceptionHandler;
 
-_Boxed* _new(natural size, void* value) {
+_Boxed* _new(natural size, ptr value) {
     if (value == NULL) {
         throwException(NULL_VALUE_EX);
     }

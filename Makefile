@@ -4,7 +4,7 @@ LINK = $(CC) $(CFLAGS) $^ -o $@
 CFLAGS = -std=c23
 DELETE_CMD = rm -f
 
-store-test:	Exception.o strings.o Store.o Store.test.o
+store-test:	Exception.o strings.o ref.o Store.o Store.test.o
 	$(LINK)
 
 ref-test: Exception.o strings.o ref.o ref.test.o

@@ -6,7 +6,7 @@ Store newStore () {
     return (Store) { .size = 0, .firstItem = NULL };
 }
 
-StoreItem* _newStoreItem (Store* store, ptr item, natural size) {
+_Boxed* _newStoreItem (Store* store, ptr item, natural size) {
     if (store == NULL) {
         throwException(NULL_STORE_EX);
     }
@@ -21,14 +21,13 @@ StoreItem* _newStoreItem (Store* store, ptr item, natural size) {
         throwException(ITEM_ALLOC_EX);
     }
 
-    (*newItem).data = malloc(size);
+    _Boxed* data = _new(size, item);
 
-    if ((*newItem).data == NULL) {
+    if (data == NULL || (*data).value == NULL) {
         throwException(ITEM_ALLOC_EX);
     }
 
-    memcpy((*newItem).data, item, size);
-    (*newItem).size = size;
+    (*newItem).data = data;
 
     if (
         ((*store).firstItem == NULL && (*store).size != 0) ||
@@ -37,15 +36,14 @@ StoreItem* _newStoreItem (Store* store, ptr item, natural size) {
        throwException(INVALID_STORE_STATE_EX);
     }
 
-    (*newItem).isNull = false;
     (*newItem).next = (*store).firstItem;
     (*store).firstItem = newItem;
     (*store).size++;
 
-    return newItem;
+    return data;
 }
 
-StoreItem* _getStoreItem (Store* store, natural index, natural size) {
+_Boxed* _getStoreItem (Store* store, natural index) {
     if (store == NULL) {
         throwException(NULL_REFERENCE_EX);
     }
@@ -68,27 +66,11 @@ StoreItem* _getStoreItem (Store* store, natural index, natural size) {
         throwException(INVALID_INDEX_EX);
     }
 
-    if ((*next).isNull) {
+    if ((*next).data == NULL) {
         throwException(NULL_REFERENCE_EX);
     }
 
-    if ((*next).size != size) {
-        throwException(ITEM_SIZE_EX);
-    }
-
-    return next;
-}
-
-ptr _unbox (StoreItem* item, natural size) {
-    if (item == NULL || (*item).isNull || (*item).data == NULL) {
-        throwException(NULL_REFERENCE_EX);
-    }
-
-    if ((*item).size != size) {
-        throwException(ITEM_SIZE_EX);
-    }
-
-    return (*item).data;
+    return (*next).data;
 }
 
 boolean deleteStore (Store* store) {
@@ -100,11 +82,10 @@ boolean deleteStore (Store* store) {
         StoreItem* next = (*store).firstItem;
 
         if ((*next).data != NULL) {
-            free((*next).data);
+            delete((*next).data);
         }
 
-        (*next).isNull = true;
-        (*next).data = NULL;
+        free(next);
 
         (*store).firstItem = (*next).next;
         (*store).size--;

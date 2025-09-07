@@ -27,11 +27,10 @@ int main () {
     }
 
     for (var j = 0; j < store.size; ++j) {
-        var item = getStoreItem(natural, &store, j);
+        var item = getStoreItem(&store, j);
 
-        if (! (*item).isNull) {
-            value = (natural*) unbox(natural, item);
-            printf("%d\n", (*value));
+        if (! isNull(item)) {
+            printf("%d\n", $(natural, item));
         }
     }
 

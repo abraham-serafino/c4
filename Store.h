@@ -6,11 +6,12 @@
 #include "types.h"
 #include "Exception.h"
 #include "strings.h"
+#include "ref.h"
 
 object (StoreItem) {
     natural size;
     boolean isNull;
-    ptr data;
+    _Boxed* data;
     struct StoreItem* next;
 };
 
@@ -20,13 +21,11 @@ object (Store) {
 };
 
 Store newStore ();
-StoreItem* _newStoreItem (Store* store, ptr item, natural size);
-StoreItem* _getStoreItem (Store* store, natural index, natural size);
-ptr _unbox (StoreItem* item, natural size);
+_Boxed* _newStoreItem (Store* store, ptr item, natural size);
+_Boxed* _getStoreItem (Store* store, natural index);
 boolean deleteStore (Store* store);
 
 #define newStoreItem(T, store, item) _newStoreItem(store, item, sizeof(T))
-#define getStoreItem(T, store, index) _getStoreItem(store, index, sizeof(T))
-#define unbox(T, item) _unbox(item, sizeof(T))
+#define getStoreItem(store, index) _getStoreItem(store, index)
 
 #endif // _C4_STORE_H
