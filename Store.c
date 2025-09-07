@@ -1,16 +1,6 @@
 #include "Store.h"
-#include "Store.strings.h"
 
 extern ExceptionHandler exceptionHandler;
-
-void throwException (const cstring message) {
-    if (message != NULL && exceptionHandler != NULL) {
-
-        exceptionHandler((Exception) {
-            .message = message
-        });
-    }
-}
 
 Store newStore () {
     return (Store) { .size = 0, .firstItem = NULL };

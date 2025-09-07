@@ -1,5 +1,5 @@
-#ifndef _TYPES_H
-#define _TYPES_H
+#ifndef _C4_TYPES_H
+#define _C4_TYPES_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -29,4 +29,4 @@
     typedef enum name name;\
     enum name
 
-#endif // _TYPES_H
+#endif // _C4_TYPES_H

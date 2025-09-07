@@ -1,5 +1,5 @@
-#ifndef _EXCEPTION_H
-#define _EXCEPTION_H
+#ifndef _C4_EXCEPTION_H
+#define _C4_EXCEPTION_H
 
 #include "types.h"
 
@@ -18,4 +18,6 @@ object (Exception) {
 
 typedef void (*ExceptionHandler)(Exception);
 
-#endif // _EXCEPTION_H
+void throwException (const cstring message);
+
+#endif // _C4_EXCEPTION_H

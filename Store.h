@@ -1,10 +1,11 @@
-#ifndef _STORE_H
-#define _STORE_H
+#ifndef _C4_STORE_H
+#define _C4_STORE_H
 
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
 #include "Exception.h"
+#include "strings.h"
 
 object (StoreItem) {
     natural size;
@@ -28,4 +29,4 @@ boolean deleteStore (Store* store);
 #define getStoreItem(T, store, index) _getStoreItem(store, index, sizeof(T))
 #define unbox(T, item) _unbox(item, sizeof(T))
 
-#endif // _STORE_H
+#endif // _C4_STORE_H
