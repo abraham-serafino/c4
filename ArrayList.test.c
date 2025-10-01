@@ -1,14 +1,13 @@
 #include <stdio.h>
-#include "Store.h"
+#include "ArrayList.h"
 
 extern ExceptionHandler exceptionHandler;
 
 int main () {
-
-    var store = newStore();
+    var store = newArrayList(0);
 
     int cleanup (int returnValue) {
-        deleteStore(&store);
+        deleteList(&store);
         exceptionHandler = NULL;
         return returnValue;
     }
@@ -22,17 +21,22 @@ int main () {
 
     exceptionHandler = &handleException;
 
-    for (var i = 5; i > 0; --i) {
-        newStoreItem(&store, int, {i});
+    for (var i = 0; i < 5; ++i) {
+        var item = pushItem(&store, new(int, {i + 1}));
     }
 
-    for (var j = 0; j < store.size; ++j) {
-        var item = getStoreItem(&store, j);
+    var storeLength = store.length;
+
+    for (var j = 0; j < storeLength; ++j) {
+        var item = shiftItemOut(&store);
 
         if (! isNull(item)) {
-            printf("%d\n", $(int, item));
+            printf("removeItem(%d): %d\n", j, unbox(int, item));
+        } else {
+            printf("removeItem(%d): null.\n", j);
         }
     }
 
     return cleanup(0);
 }
+

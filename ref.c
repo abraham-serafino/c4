@@ -25,7 +25,7 @@ _Boxed* _new(natural size, ptr value) {
     return wrapper;
 }
 
-void* _deref (_Boxed* wrapper, natural size) {
+void* _unbox (_Boxed* wrapper, natural size) {
     if (wrapper == NULL) {
         throwException(NULL_REFERENCE_EX);
     }

@@ -9,7 +9,7 @@
 
 object (_Boxed) {
     void* value;
-    natural size;
+    uint size;
 };
 
 #define boxed(T) _Boxed*
@@ -25,12 +25,12 @@ typedef boxed(number) Number;
 typedef boxed(ulong) ULong;
 typedef boxed(superlong) Superlong;
 
-_Boxed* _new(natural size, void* value);
-void* _deref (_Boxed* wrapper, natural size);
+_Boxed* _new(uint size, void* value);
+void* _unbox (_Boxed* wrapper, uint size);
 void delete (_Boxed* wrapper);
 
 #define new(T, value) _new(sizeof(T), &((T) value))
-#define $(T, wrapper) (*((T*) _deref(wrapper, sizeof(T))))
+#define unbox(T, wrapper) (*((T*) _unbox(wrapper, sizeof(T))))
 #define isNull(wrapper) ((wrapper == NULL) || (*wrapper).value == NULL)
 
 #endif // _C4_REF_H

@@ -7,7 +7,7 @@ object (Person) {
     int age;
 };
 
-int main() {
+int main () {
     Int price = new (int, {99});
     Int price2 = price;
     boxed (Person) alice;
@@ -29,16 +29,17 @@ int main() {
 
     exceptionHandler = &handleException;
 
-    $(int, price)++;
-    printf("%d\n", $(int, price2));
+    unbox (int, price)++;
+    printf("%d\n", unbox (int, price2));
 
     delete(price2);
     printf("%s\n", isNull(price) ? "true" : "false");
 
-    alice = new(Person, { .age = 20 });
-    $(Person, alice).age++;
+    alice = new (Person, { .age = 20 });
+    unbox (Person, alice).age++;
 
-    printf("%d\n", $(Person, alice).age);
+    printf("%d\n", unbox (Person, alice).age);
 
     return cleanup(0);
 }
+

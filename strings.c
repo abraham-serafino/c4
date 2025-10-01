@@ -1,9 +1,9 @@
 #include "types.h"
 
-const cstring NULL_STORE_EX = "\nCannot create item for NULL store.\n";
+const cstring NULL_LIST_EX = "\nCannot create item for NULL list.\n";
 
 const cstring NULL_VALUE_EX =
-    "\nNull value cannot be used to create store item.\n";
+    "\nNull value cannot be used to create list item.\n";
 
 const cstring ITEM_ALLOC_EX =
     "\nMemory error: Unable to reserve space for new store item.\n";

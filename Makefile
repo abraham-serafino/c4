@@ -4,7 +4,7 @@ LINK = $(CC) $(CFLAGS) $^ -o $@
 CFLAGS = -std=c23
 DELETE_CMD = rm -f
 
-store-test:	Exception.o strings.o ref.o Store.o Store.test.o
+list-test:	Exception.o strings.o ref.o ArrayList.o ArrayList.test.o
 	$(LINK)
 
 ref-test: Exception.o strings.o ref.o ref.test.o
@@ -19,10 +19,10 @@ ref.o: ref.c
 ref.test.o: ref.test.c
 	$(COMPILE)
 
-Store.o: Store.c
+ArrayList.o: ArrayList.c
 	$(COMPILE)
 
-Store.test.o: Store.test.c
+ArrayList.test.o: ArrayList.test.c
 	$(COMPILE)
 
 strings.o: strings.c
@@ -31,4 +31,4 @@ strings.o: strings.c
 .PHONY: clean
 
 clean:
-	$(DELETE_CMD) *.o store-test ref-test
+	$(DELETE_CMD) errlist *.o list-test ref-test
