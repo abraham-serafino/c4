@@ -5,7 +5,6 @@
 #include <string.h>
 #include "types.h"
 #include "Exception.h"
-#include "strings.h"
 #include "ref.h"
 
 object (ArrayList) {

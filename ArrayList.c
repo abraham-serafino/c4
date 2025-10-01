@@ -102,11 +102,6 @@ _Boxed* removeItem (ArrayList* list, uint index) {
         sizeof(_Boxed*) * length
     );
 
-    /* while (currentIndex < listLength) { */
-    /*     (*list).items[currentIndex] = (*list).items[currentIndex + 1]; */
-    /*     currentIndex++; */
-    /* } */
-
     (*list).length--;
 
     return result; // It's okay for result to be NULL.

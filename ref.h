@@ -1,5 +1,5 @@
-#ifndef _C4_REF_H
-#define _C4_REF_H
+#ifndef _C4_REF_H_
+#define _C4_REF_H_
 
 #include <stdlib.h>
 #include <string.h>
@@ -33,4 +33,5 @@ void delete (_Boxed* wrapper);
 #define unbox(T, wrapper) (*((T*) _unbox(wrapper, sizeof(T))))
 #define isNull(wrapper) ((wrapper == NULL) || (*wrapper).value == NULL)
 
-#endif // _C4_REF_H
+#endif // _C4_REF_H_
+

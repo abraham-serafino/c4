@@ -32,3 +32,4 @@ strings.o: strings.c
 
 clean:
 	$(DELETE_CMD) errlist *.o list-test ref-test
+

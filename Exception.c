@@ -10,3 +10,4 @@ void throwException (const cstring message) {
         });
     }
 }
+

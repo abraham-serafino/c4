@@ -22,3 +22,4 @@ const cstring NULL_REFERENCE_EX = "\nNull reference exception!\n";
 
 const cstring ITEM_SIZE_EX =
     "\nThe item you are retrieving is not the size you expected.\n";
+

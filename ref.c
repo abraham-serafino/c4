@@ -52,3 +52,4 @@ void delete (_Boxed* wrapper) {
 
     (*wrapper).value = NULL;
 }
+
