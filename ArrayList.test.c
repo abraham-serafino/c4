@@ -5,9 +5,12 @@ extern ExceptionHandler exceptionHandler;
 
 int main () {
     var store = newArrayList(0);
+    var tempItem = (Int) NULL;
 
     int cleanup (int returnValue) {
         deleteList(&store);
+        printf("%d\n", unbox(int, tempItem));
+        printf("%s\n", isNull(tempItem) ? "true" : "false");
         exceptionHandler = NULL;
         return returnValue;
     }
@@ -29,6 +32,7 @@ int main () {
 
     for (var j = 0; j < storeLength; ++j) {
         var item = shiftItemOut(&store);
+        tempItem = item;
 
         if (! isNull(item)) {
             printf("removeItem(%d): %d\n", j, unbox(int, item));

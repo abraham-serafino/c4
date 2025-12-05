@@ -5,25 +5,39 @@
 #include <string.h>
 #include "types.h"
 #include "Exception.h"
-#include "ref.h"
+
+object (ListItem) {
+    uint size;
+    void* value;
+}
 
 object (ArrayList) {
     uint length;
     uint capacity;
-    _Boxed** items;
+    ListItem* items;
 };
+
+ListItem _new (uint size, void* value) {
+void* _unbox (uint size, ListItem* wrapper);
+void delete (ListItem* item);
 
 ArrayList newArrayList (uint capacity);
 void deleteList (ArrayList* list);
-_Boxed* insertItem (ArrayList* list, _Boxed* value, uint index);
+_Boxed* insertItem (ArrayList* list, uint size, void* value, uint index);
 _Boxed* getItem (ArrayList* list, uint index);
 _Boxed* removeItem (ArrayList* list, uint index);
 boolean isEmpty(ArrayList* list);
 
-#define shiftItemIn(list, value) insertItem(list, value, 0);
+#define new(T, value) _new(sizeof(T), &((T) value))
+#define unbox(T, wrapper)  (*((T*) _unbox(sizeof(T), wrapper)))
+
+#define insertItem(list, T, index) \
+    _insertItem(list, sizeof(T), index)
+
+#define shiftItemIn(list, T) insertItem(list, T, 0);
 #define shiftItemOut(list) removeItem(list, 0);
 
-#define pushItem(list, value) insertItem(list, value, (*(list)).length);
+#define pushItem(list, T) insertItem(list, T, (*(list)).length);
 #define popItem(list) getItem(list, (*(list)).length);
 
 #endif // _C4_ARRAY_LIST_H_

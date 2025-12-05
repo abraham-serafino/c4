@@ -1,8 +1,47 @@
 #include "ArrayList.h"
 
+ListItem _new (uint size, void* value) {
+    ListItem item = {
+        .size = size,
+        .value = malloc(size)
+    };
+
+    if (item.value == NULL) {
+        throwException("\nUnable to reserve memory for item.\n");
+    }
+
+    memcpy(item.value, value, size);
+    return item;
+}
+
+void* _unbox (ListItem* wrapper, uint size) {
+    if (wrapper == NULL || (*wrapper).value == NULL) {
+        throwException("\nNull reference exception.\n");
+    }
+
+    if ((*wrapper).size != size) {
+        throwException("\nItem is not the size you are expecting.\n");
+    }
+
+    return (*wrapper).value;
+}
+
+
+void delete (ListItem* item) {
+    if (wrapper == NULL) {
+        return;
+    }
+
+    if ((*item).value != NULL) {
+        free((*item).value);
+    }
+
+    (*item).value = NULL;
+}
+
 ArrayList newArrayList (uint capacity) {
     var result = (ArrayList) { .capacity = capacity, .length = 0 };
-    result.items = malloc(sizeof(_Boxed*) * capacity);
+    result.items = malloc(sizeof(ListItem*) * capacity);
 
     if (result.items == NULL) {
         throwException("\nUnable to reserve memory for list.\n");
@@ -15,23 +54,7 @@ ArrayList newArrayList (uint capacity) {
     return result;
 }
 
-void deleteList (ArrayList* list) {
-    if (list != NULL && (*list).items != NULL) {
-        var index = 0;
-        var listLength = (*list).length;
-
-        while (index < listLength) {
-            delete((*list).items[index]);
-            (*list).length--;
-            index++;
-        }
-
-        (*list).items = NULL;
-        (*list).capacity = 0;
-    }
-}
-
-_Boxed* insertItem (ArrayList* list, _Boxed* item, uint index) {
+ListItem* insertItem (ArrayList* list, ListItem item, uint index) {
     if (list == NULL) {
         throwException("\nNull reference exception.\n");
     }
@@ -77,10 +100,10 @@ _Boxed* insertItem (ArrayList* list, _Boxed* item, uint index) {
     (*list).items[index] = item;
     (*list).length = newLength;
 
-    return item;
+    return &((*list).items[index]);
 }
 
-_Boxed* getItem (ArrayList* list, uint index) {
+ListItem* getItem (ArrayList* list, uint index) {
     if (list == NULL) {
         throwException("\nNull reference exception.\n");
     }
@@ -92,19 +115,19 @@ _Boxed* getItem (ArrayList* list, uint index) {
     return (*list).items[index];
 }
 
-_Boxed* removeItem (ArrayList* list, uint index) {
-    var result = getItem(list, index);
+ListItem removeItem (ArrayList* list, uint index) {
+    var item = getItem(list, index);
     var length = (*list).length - index;
 
     memcpy(
         &((*list).items[index]),
         &((*list).items[index + 1]),
-        sizeof(_Boxed*) * length
+        sizeof(ListItem*) * length
     );
 
     (*list).length--;
 
-    return result; // It's okay for result to be NULL.
+    return (*item);
 }
 
 boolean isEmpty (ArrayList* list) {
@@ -115,4 +138,22 @@ boolean isEmpty (ArrayList* list) {
         return false;
     }
 }
+
+void deleteList (ArrayList* list) {
+    if (list != NULL && (*list).items != NULL) {
+        var index = 0;
+        var listLength = (*list).length;
+
+        while (index < listLength) {
+            delete((*list).items[index]);
+            (*list).length--;
+            index++;
+        }
+
+        free((*list).items);
+        (*list).items = NULL;
+        (*list).capacity = 0;
+    }
+}
+
 
