@@ -1,3 +1,3 @@
 # C4 Framework
 
-C4 is the next improvement on the C language after C3. It's a framework for C23 that adds some modern language features to your C programming environment.
+C4 is the explosive new C programming framework that allows you to use modern features (like garbage collection, safe pointers, type inference, and dynamic arrays) in a low-level programming environment.
