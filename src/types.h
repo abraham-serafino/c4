@@ -39,13 +39,13 @@ typedef char* cstring;
 typedef struct TypeDescriptor TypeDescriptor;
 
 struct TypeDescriptor {
-    const cstring typeName;
+    const cstring name;
     uint size;
 };
 
 #define defineType(T) \
     const TypeDescriptor* T##Type = & (TypeDescriptor) {\
-        .typeName = #T, \
+        .name = #T, \
         .size = sizeof(T) \
     };
 
