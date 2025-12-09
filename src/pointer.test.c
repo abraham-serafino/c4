@@ -41,8 +41,10 @@ int main () {
     initializeGcDefaults();
 
     // 'pointer' is type agnostic, so thirdRef can be reused
-    // as a reference to a different type.
-    thirdRef = create_uninitialized (char); // slightly faster
+    // as a reference to a different type:
+    thirdRef = create_uninitialized (char);
+            // ^ slightly faster than create()
+
     var fourthRef = thirdRef;
 
     // Careful - destroy() will invalidate *both* references!
@@ -52,7 +54,7 @@ int main () {
     thirdRef = null;
 
     // Now we can trust GC not to free the memory yet,
-    // because secondNull still points to it.
+    // because fourthRef still points to it.
 
     debug(
         "after setting thirdRef back to null: '%c'\n",
@@ -72,7 +74,7 @@ int main () {
         "after setting fourthRef to null: %s\n\n",
 
         !isNull (fourthRef) ?
-            // use the '&' operator to cast the value back to a char*
+            // '&' casts the unboxed value to a "string" (char*)
             &(unbox (fourthRef, char)) :
 
             "null"

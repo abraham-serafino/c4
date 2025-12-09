@@ -1,11 +1,11 @@
 #include "c4defaults.h"
 
 ExceptionHandler exceptionHandler;
+RandomGenerator generateRandomNumber;
 
 Allocator allocate;
 Reallocator reallocate;
 Deallocator deallocate;
-RandomGenerator generateRandomNumber;
 
 void defaultExceptionHandler (cstring message) {
     fprintf(stderr, "\n%s\n", message);
@@ -56,9 +56,9 @@ void initializeStandardDefaults () {
     exceptionHandler = defaultExceptionHandler;
     generateRandomNumber = defaultRandomGenerator;
 
-    allocate = &stdAllocator;
-    reallocate = &stdReallocator;
-    deallocate = &stdDeallocator;
+    allocate = stdAllocator;
+    reallocate = stdReallocator;
+    deallocate = stdDeallocator;
 }
 
 void initializeGcDefaults () {
@@ -67,7 +67,7 @@ void initializeGcDefaults () {
     exceptionHandler = defaultExceptionHandler;
     generateRandomNumber = defaultRandomGenerator;
 
-    allocate = &gcAllocator;
-    reallocate = &gcReallocator;
-    deallocate = &gcDeallocator;
+    allocate = gcAllocator;
+    reallocate = gcReallocator;
+    deallocate = gcDeallocator;
 }
