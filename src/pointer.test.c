@@ -1,4 +1,3 @@
-#include <assert.h>
 #include "c4.h"
 #include "c4defaults.h"
 
