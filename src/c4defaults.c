@@ -1,7 +1,7 @@
 #include "c4defaults.h"
 
 ExceptionHandler exceptionHandler;
-RandomGenerator generateRandomNumber;
+UniqueNumberGenerator generateUniqueNumber;
 
 Allocator allocate;
 Reallocator reallocate;
@@ -12,8 +12,13 @@ void defaultExceptionHandler (cstring message) {
     exit(1);
 }
 
-uint64 defaultRandomGenerator () {
-    return time(NULL);
+uint64 defaultUniqueGenerator () {
+    // This thread-safe function is guaranteed not to return
+    // the same number twice, unless it is called 1 billion times
+    // per second for 584 years.
+
+    static _Atomic uint64 counter = 1;
+    return atomic_fetch_add(&counter, 1);
 }
 
 void* gcAllocator (uint size, boolean shouldInitialize) {
@@ -54,7 +59,7 @@ void stdDeallocator (void** data) {
 
 void initializeStandardDefaults () {
     exceptionHandler = defaultExceptionHandler;
-    generateRandomNumber = defaultRandomGenerator;
+    generateUniqueNumber = defaultUniqueGenerator;
 
     allocate = stdAllocator;
     reallocate = stdReallocator;
@@ -65,7 +70,7 @@ void initializeGcDefaults () {
     GC_INIT();
 
     exceptionHandler = defaultExceptionHandler;
-    generateRandomNumber = defaultRandomGenerator;
+    generateUniqueNumber = defaultUniqueGenerator;
 
     allocate = gcAllocator;
     reallocate = gcReallocator;

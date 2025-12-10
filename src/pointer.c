@@ -43,7 +43,7 @@ pointer createArray (
     var this = (pointer) {
         .data = data,
         .type = itemType,
-        .hash = generateRandomNumber()
+        .hash = generateUniqueNumber()
     };
 
     // Storing a unique identifier provides a way for other
@@ -127,6 +127,6 @@ void setDeallocator (Deallocator deallocator) {
     deallocate = deallocator;
 }
 
-void setRandomGenerator (RandomGenerator generator) {
-    generateRandomNumber = generator;
+void setUniqueNumberGenerator (UniqueNumberGenerator generator) {
+    generateUniqueNumber = generator;
 }

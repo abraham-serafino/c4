@@ -43,8 +43,8 @@ typedef void (*Deallocator)(void** data);
 extern Deallocator deallocate;
 void setDeallocator (Deallocator deallocator);
 
-typedef uint64 (*RandomGenerator)();
-extern RandomGenerator generateRandomNumber;
-void setRandomGenerator (RandomGenerator generator);
+typedef uint64 (*UniqueNumberGenerator)();
+extern UniqueNumberGenerator generateUniqueNumber;
+void setUniqueNumberGenerator (UniqueNumberGenerator generator);
 
 #endif // _C4_POINTER_H_
