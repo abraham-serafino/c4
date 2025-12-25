@@ -32,49 +32,47 @@ typedef char* cstring;
 
 #define var auto
 #define bitfield(i) _BitInt(i)
-#define NULL ((void*) 0)
+#define null ((void*) 0)
 #define UINT32_MAX 0xFFFFFFFF
-#define UINT64_MAX 0xFFFFFFFFFFFFFFFFULL
 
-typedef struct TypeDescriptor TypeDescriptor;
+// typedef struct DataType {
+//     const cstring name;
+//     uint size;
+// } DataType;
 
-struct TypeDescriptor {
-    const cstring name;
-    uint size;
-};
+// #define defineType(T) \
+//     const DataType* T##Type = & (DataType) {\
+//         .name = #T, \
+//         .size = sizeof(T) \
+//     };
 
-#define defineType(T) \
-    const TypeDescriptor* T##Type = & (TypeDescriptor) {\
-        .name = #T, \
-        .size = sizeof(T) \
-    };
-
-#define defineTypeHeader(T) \
-    extern const TypeDescriptor* T##Type;
+// #define declareType(T) \
+//     extern const DataType* T##Type;
 
 #define object(name) \
     typedef struct name name;\
+    declareType(name);\
     struct name
 
 #define option(name) \
     typedef enum name name;\
     enum name
 
-defineTypeHeader(int8);
-defineTypeHeader(uint8);
-defineTypeHeader(byte);
-defineTypeHeader(boolean);
-defineTypeHeader(int16);
-defineTypeHeader(uint16);
-defineTypeHeader(int32);
-defineTypeHeader(natural);
-defineTypeHeader(double);
-defineTypeHeader(number);
-defineTypeHeader(int64);
-defineTypeHeader(uint64);
-defineTypeHeader(superlong);
-defineTypeHeader(superulong);
-defineTypeHeader(int);
-defineTypeHeader(char);
+// declareType(int8);
+// declareType(uint8);
+// declareType(byte);
+// declareType(boolean);
+// declareType(int16);
+// declareType(uint16);
+// declareType(int32);
+// declareType(natural);
+// declareType(double);
+// declareType(number);
+// declareType(int64);
+// declareType(uint64);
+// declareType(superlong);
+// declareType(superulong);
+// declareType(int);
+// declareType(char);
 
 #endif // _C4_TYPES_H_

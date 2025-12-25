@@ -1,9 +1,8 @@
 #include "c4defaults.h"
 
 ExceptionHandler exceptionHandler;
-UniqueNumberGenerator generateUniqueNumber;
 
-Allocator allocate;
+Allocator   allocate;
 Reallocator reallocate;
 Deallocator deallocate;
 
@@ -12,35 +11,22 @@ void defaultExceptionHandler (cstring message) {
     exit(1);
 }
 
-uint64 defaultUniqueGenerator () {
-    // This thread-safe function is guaranteed not to return
-    // the same number twice, unless it is called 1 billion times
-    // per second for 584 years.
+// void* gcAllocator (uint size, boolean shouldInitialize) {
+//     return GC_MALLOC(size);
+// }
 
-    static _Atomic uint64 counter = 1;
-    return atomic_fetch_add(&counter, 1);
-}
+// void* gcReallocator (void* original, uint size) {
+//     return GC_REALLOC(original, size);
+// }
 
-void* gcAllocator (uint size, boolean shouldInitialize) {
-    return GC_MALLOC(size);
-}
+// void gcDeallocator (void** data) {
+//     if (data != NULL && *data != NULL) {
+//         *data = NULL;
+//     }
+// }
 
-void* gcReallocator (void* original, uint size) {
-    return GC_REALLOC(original, size);
-}
-
-void gcDeallocator (void** data) {
-    if (data != NULL && *data != NULL) {
-        *data = NULL;
-    }
-}
-
-void* stdAllocator (uint size, boolean shouldInitialize) {
-    if (shouldInitialize) {
-        return calloc(size, 1);
-    } else {
-        return malloc(size);
-    }
+void* stdAllocator (uint size) {
+    return calloc(size, 1);
 }
 
 void* stdReallocator (void* original, uint size) {
@@ -59,20 +45,18 @@ void stdDeallocator (void** data) {
 
 void initializeStandardDefaults () {
     exceptionHandler = defaultExceptionHandler;
-    generateUniqueNumber = defaultUniqueGenerator;
 
     allocate = stdAllocator;
     reallocate = stdReallocator;
     deallocate = stdDeallocator;
 }
 
-void initializeGcDefaults () {
-    GC_INIT();
+// void initializeGcDefaults () {
+//     GC_INIT();
 
-    exceptionHandler = defaultExceptionHandler;
-    generateUniqueNumber = defaultUniqueGenerator;
+//     exceptionHandler = defaultExceptionHandler;
 
-    allocate = gcAllocator;
-    reallocate = gcReallocator;
-    deallocate = gcDeallocator;
-}
+//     allocate = gcAllocator;
+//     reallocate = gcReallocator;
+//     deallocate = gcDeallocator;
+// }

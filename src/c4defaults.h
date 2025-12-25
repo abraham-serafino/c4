@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdatomic.h>
 
 #include "c4.h"
 
@@ -12,17 +11,16 @@
 #define NANOSECONDS_PER_MILLISECOND 1000000;
 
 void defaultExceptionHandler (cstring message);
-uint64 defaultUniqueGenerator ();
 
-void* gcAllocator (uint size, boolean shouldInitialize);
-void* gcReallocator (void* original, uint size);
-void gcDeallocator (void** data);
+// void* gcAllocator (uint size);
+// void* gcReallocator (void* original, uint size);
+// void gcDeallocator (void** data);
 
-void* stdAllocator (uint size, boolean shouldInitialize);
+void* stdAllocator (uint size);
 void* stdReallocator (void* original, uint size);
 void stdDeallocator (void** data);
 
-void initializeGcDefaults ();
+// void initializeGcDefaults ();
 void initializeStandardDefaults ();
 
 #endif // _C4_DEFAULTS_H_
