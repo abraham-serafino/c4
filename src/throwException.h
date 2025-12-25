@@ -3,10 +3,11 @@
 
 #include "c4.h"
 
-typedef void (*ExceptionHandler)(cstring message);
-extern ExceptionHandler exceptionHandler;
-void setExceptionHandler (ExceptionHandler newHandler);
+typedef void (*ExceptionHandler)(char* message);
 
-void throwException (cstring message);
+extern ExceptionHandler exceptionHandler;
+
+void setExceptionHandler    (ExceptionHandler newHandler);
+void throwException         (char* message);
 
 #endif // _C4_THROW_EXCEPTION_H_

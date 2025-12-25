@@ -1,8 +1,27 @@
 #include "c4.h"
 #include "c4defaults.h"
 
-void increment(Int x) {
-    (deref (x))++;
+object (Person_t) {
+    cstring name;
+    uint age;
+};
+
+defineBoxedType(Person_t, Person);
+definePointerType(Person);
+
+Person newPerson(cstring name, uint age) {
+    var result = heap (Person, {});
+
+    (deref (result)) = (Person_t) {
+        .name   = name,
+        .age    = age
+    };
+
+    return result;
+}
+
+void incrementAge(Person person) {
+    (deref (person)).age++;
 }
 
 int main () {
@@ -11,29 +30,31 @@ int main () {
     var myInt           = box (Int, 100);
     var bottlesOfBeer   = ref (Int, myInt);
 
-    // bottlesOfBeer = 67;            // should not compile
-    // *bottlesOfBeer = 9;            // should not compile
+    // bottlesOfBeer = 67; // should not compile
+    // *bottlesOfBeer = 9; // should not compile
 
     unbox (myInt)--;
     debug("\n%d\n", deref (bottlesOfBeer)); // '99'
 
-    var myOtherInt  = heap  (Int, 99);
-    var secondRef   =       myOtherInt;
+    var bob         = newPerson("Bob", 20);
+    var secondRef   = bob;
 
-    increment(myOtherInt);
-    debug("%d\n\n", deref (secondRef)); // '100'
+    incrementAge(bob);
+    debug("%d\n\n", (deref (secondRef)).age); // '21'
 
-    destroy (myOtherInt);
+    destroy (bob);
 
     // comment out the condition to test "Invalid reference."
     unless (isNull(secondRef)) {
         debug(
-            "%d\n",
-            deref (secondRef) // throws "Invalid reference."
+            "Hello, %s!\n",
+
+            // throws "Invalid reference."
+            (deref (secondRef)).name
         );
     }
 
-    // destroy() quietly refuses to free the same memory twice:
+    // destroy quietly refuses to free the same memory twice
     destroy (secondRef);
 
     // Unfortunately, the compiler won't let us do this:

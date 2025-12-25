@@ -70,41 +70,41 @@ extern Deallocator  deallocate;
 })
 
 #define isNull(ptr) ( \
-    (ptr).data == NULL || (ptr).data->hash != (ptr).hash \
+    (ptr).data == null || (ptr).data->hash != (ptr).hash \
 )
 
-defineBoxedType(int,        Int);
-defineBoxedType(int8,       Int8);
-defineBoxedType(uint8,      Uint8);
-defineBoxedType(byte,       Byte);
-defineBoxedType(boolean,    Boolean);
-defineBoxedType(int16,      Int16);
-defineBoxedType(uint16,     Uint16);
-defineBoxedType(int32,      Int32);
-defineBoxedType(natural,    Natural);
-defineBoxedType(double,     Double);
-defineBoxedType(number,     Number);
-defineBoxedType(int64,      Int64);
-defineBoxedType(uint64,     Uint64);
-defineBoxedType(superlong,  Superlong);
-defineBoxedType(superulong, Superulong);
-defineBoxedType(char,       Char);
+defineBoxedType     (int,        Int);
+defineBoxedType     (int8,       Int8);
+defineBoxedType     (uint8,      Uint8);
+defineBoxedType     (byte,       Byte);
+defineBoxedType     (boolean,    Boolean);
+defineBoxedType     (int16,      Int16);
+defineBoxedType     (uint16,     Uint16);
+defineBoxedType     (int32,      Int32);
+defineBoxedType     (natural,    Natural);
+defineBoxedType     (double,     Double);
+defineBoxedType     (number,     Number);
+defineBoxedType     (int64,      Int64);
+defineBoxedType     (uint64,     Uint64);
+defineBoxedType     (superlong,  Superlong);
+defineBoxedType     (superulong, Superulong);
+defineBoxedType     (char,       Char);
 
-definePointerType(Int);
-definePointerType(Int8);
-definePointerType(Uint8);
-definePointerType(Byte);
-definePointerType(Boolean);
-definePointerType(Int16);
-definePointerType(Uint16);
-definePointerType(Int32);
-definePointerType(Natural);
-definePointerType(Double);
-definePointerType(Number);
-definePointerType(Int64);
-definePointerType(Uint64);
-definePointerType(Superlong);
-definePointerType(Superulong);
-definePointerType(Char);
+definePointerType   (Int);
+definePointerType   (Int8);
+definePointerType   (Uint8);
+definePointerType   (Byte);
+definePointerType   (Boolean);
+definePointerType   (Int16);
+definePointerType   (Uint16);
+definePointerType   (Int32);
+definePointerType   (Natural);
+definePointerType   (Double);
+definePointerType   (Number);
+definePointerType   (Int64);
+definePointerType   (Uint64);
+definePointerType   (Superlong);
+definePointerType   (Superulong);
+definePointerType   (Char);
 
 #endif // _C4_POINTER_H_

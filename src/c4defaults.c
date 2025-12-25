@@ -34,21 +34,21 @@ void* stdReallocator (void* original, uint size) {
 }
 
 void stdDeallocator (void** data) {
-    if (data != NULL) {
-        if (*data != NULL) {
+    if (data != null) {
+        if (*data != null) {
             free(*data);
         }
 
-        *data = NULL;
+        *data = null;
     }
 }
 
 void initializeStandardDefaults () {
     exceptionHandler = defaultExceptionHandler;
 
-    allocate = stdAllocator;
-    reallocate = stdReallocator;
-    deallocate = stdDeallocator;
+    allocate    = stdAllocator;
+    reallocate  = stdReallocator;
+    deallocate  = stdDeallocator;
 }
 
 // void initializeGcDefaults () {
