@@ -1,7 +1,7 @@
 #include "MemoryPool.h"
 
-#define BLOCK_SIZE          1024
-#define BLOCK_COUNT         8
+#define BLOCK_SIZE  1024
+#define BLOCK_COUNT 8
 
 #define TOTAL_POOL_SIZE ( \
     POOL_HEADER_SIZE +  ( \
@@ -14,9 +14,9 @@ byte    globalBuffer        [TOTAL_POOL_SIZE]   = {};
 
 int main() {
     var pool        = createMemoryPool((MemoryPoolOptions) {
-      .blockSize    = BLOCK_SIZE,
-      .blockCount   = BLOCK_COUNT,
-      .memorySource = globalBuffer
+        .blockSize    = BLOCK_SIZE,
+        .blockCount   = BLOCK_COUNT,
+        .memorySource = globalBuffer
     });
 
     printf("Hello, World!\n");

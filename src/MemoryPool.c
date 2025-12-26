@@ -1,44 +1,47 @@
 #include "MemoryPool.h"
 
 MemoryPool* createMemoryPool (MemoryPoolOptions options) {
-  var blockSize    = options.blockSize;
-  var blockCount   = options.blockCount;
+    var blockSize    = options.blockSize;
+    var blockCount   = options.blockCount;
 
-  if (blockSize == 0 || blockCount == 0) {
-    return null;
-  }
+    if (blockSize == 0 || blockCount == 0) {
+        return null;
+    }
 
-  var memorySource    = (MemoryPool*) options.memorySource;
+    var memorySource    = (MemoryPool*) options.memorySource;
 
-  if (memorySource == null) {
-      memorySource = (MemoryPool*) allocate(
-          sizeof(MemoryPool) + (
-            (blockSize + sizeof(MemoryBlock)) * blockCount
-          )
-      );
-  }
+    if (memorySource == null) {
+        memorySource = (MemoryPool*) allocate(
+            sizeof(MemoryPool) + (
+                (blockSize + sizeof(MemoryBlock)) * blockCount
+            )
+        );
+    }
 
-  if (memorySource == null) {
-    throwException("Insufficient memory.");
-    return null;
-  }
+    if (memorySource == null) {
+        throwException("Insufficient memory.");
+        return null;
+    }
 
-  *memorySource     = (MemoryPool) {
-    .blockSize      = blockSize,
-    .blockCount     = blockCount,
-    .generation     = 0,
-    .growOnCommand  = options.growOnCommand,
-    .freeBlockIndex = 1,
-    .currentBlock   = (MemoryBlock*) &((*memorySource).freeBlocks[0])
-  };
+    *memorySource     = (MemoryPool) {
+        .blockSize      = blockSize,
+        .blockCount     = blockCount,
+        .generation     = 0,
+        .growOnCommand  = options.growOnCommand,
+        .freeBlockIndex = 1,
 
-  if (blockCount > 1) {
-    (*memorySource).firstFreeBlock = (MemoryBlock*) &(
-        (*memorySource).freeBlocks[0]
-    );
-  }
+        .currentBlock   = (MemoryBlock*) &(
+            (*memorySource).freeBlocks[0]
+        )
+    };
 
-  return memorySource;
+    if (blockCount > 1) {
+        (*memorySource).firstFreeBlock = (MemoryBlock*) &(
+            (*memorySource).freeBlocks[0]
+        );
+    }
+
+    return memorySource;
 }
 
 boolean clearMemoryPool (MemoryPool* pool) {
