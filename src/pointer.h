@@ -5,28 +5,35 @@
 
 typedef void*   (*Allocator)    (uint size);
 typedef void*   (*Reallocator)  (void* original, uint size);
-typedef void    (*Deallocator)  (void** data);
+typedef boolean (*Deallocator)  (void** data);
+
+typedef void    (*MemorySetter) (
+    void* destination,
+    int value,
+    size_t size
+);
 
 uint64 generateUniqueHash   ();
 void   setAllocator         (Allocator allocator);
+void   setZeroAllocator     (Allocator allocator);
 void   setReallocator       (Reallocator reallocator);
 void   setDeallocator       (Deallocator deallocator);
 
 extern Allocator    allocate;
+extern Allocator    allocate0;
 extern Reallocator  reallocate;
 extern Deallocator  deallocate;
+extern MemorySetter setMemory;
 
 #define defineBoxedType(T, name) \
     typedef struct { \
         uint64 hash; \
         T data; \
-    } name##Box
-
-#define definePointerType(T) \
+    } name##Box; \
     typedef struct { \
         uint64 hash; \
-        T##Box* data; \
-    } T
+        name##Box* data; \
+    } name
 
 #define box(T, value) ( \
     (T##Box) { \
@@ -44,6 +51,14 @@ extern Deallocator  deallocate;
     } \
 )
 
+#define deref(ptr) *({ \
+    const typeof(ptr) _p = (ptr); \
+    if (isNull(_p)) { \
+        throwException("Invalid reference."); \
+    } \
+    &(_p.data->data); \
+})
+
 #define heap(T, value) ({ \
     T##Box* _temp = (T##Box*) allocate(sizeof(T##Box)); \
     if (!_temp) throwException("Out of memory"); \
@@ -60,14 +75,6 @@ extern Deallocator  deallocate;
         deallocate((void**) &(ptr).data); \
     } \
 }
-
-#define deref(ptr) *({ \
-    const typeof(ptr) _p = (ptr); \
-    if (isNull(_p)) { \
-        throwException("Invalid reference."); \
-    } \
-    &(_p.data->data); \
-})
 
 #define isNull(ptr) ( \
     (ptr).data == null || (ptr).data->hash != (ptr).hash \
@@ -89,22 +96,5 @@ defineBoxedType     (uint64,     Uint64);
 defineBoxedType     (superlong,  Superlong);
 defineBoxedType     (superulong, Superulong);
 defineBoxedType     (char,       Char);
-
-definePointerType   (Int);
-definePointerType   (Int8);
-definePointerType   (Uint8);
-definePointerType   (Byte);
-definePointerType   (Boolean);
-definePointerType   (Int16);
-definePointerType   (Uint16);
-definePointerType   (Int32);
-definePointerType   (Natural);
-definePointerType   (Double);
-definePointerType   (Number);
-definePointerType   (Int64);
-definePointerType   (Uint64);
-definePointerType   (Superlong);
-definePointerType   (Superulong);
-definePointerType   (Char);
 
 #endif // _C4_POINTER_H_

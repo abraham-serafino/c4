@@ -14,6 +14,10 @@ void setAllocator (Allocator allocator) {
     allocate = allocator;
 }
 
+void setZeroAllocator (Allocator allocator) {
+    allocate0 = allocator;
+}
+
 void setReallocator (Reallocator reallocator) {
     reallocate = reallocator;
 }

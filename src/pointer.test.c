@@ -6,11 +6,10 @@ object (Person_t) {
     uint age;
 };
 
-defineBoxedType(Person_t, Person);
-definePointerType(Person);
+defineBoxedType     (Person_t, Person);
 
-Person newPerson(cstring name, uint age) {
-    var result = heap (Person, {});
+Person newPerson (cstring name, uint age) {
+    var result = heap  (Person, {});
 
     (deref (result)) = (Person_t) {
         .name   = name,
@@ -20,7 +19,7 @@ Person newPerson(cstring name, uint age) {
     return result;
 }
 
-void incrementAge(Person person) {
+void incrementAge (Person person) {
     (deref (person)).age++;
 }
 
