@@ -17,7 +17,7 @@
 #define upTo(x)             < (x); ++
 #define downTo(x)           >= (x); --
 
-#define loop_until(...)     while   (! (__VA_ARGS__))
+#define until(...)     while   (! (__VA_ARGS__))
 #define unless(...)         if      (! (__VA_ARGS__))
 #define loop_forever        while   (true)      
 

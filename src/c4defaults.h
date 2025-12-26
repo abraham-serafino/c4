@@ -16,9 +16,9 @@ void    defaultExceptionHandler     (cstring message);
 // void* gcReallocator (void* original, uint size);
 // void gcDeallocator (void** data);
 
-void*   stdAllocator                (uint size);
-void*   stdReallocator              (void* original, uint size);
-void    stdDeallocator              (void** data);
+void*   stdAllocator            (uint size);
+void*   stdReallocator          (void* original, uint size);
+boolean stdDeallocator          (void** data);
 
 // void initializeGcDefaults ();
 void    initializeStandardDefaults  ();

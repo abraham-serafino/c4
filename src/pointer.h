@@ -7,10 +7,10 @@ typedef void*   (*Allocator)    (uint size);
 typedef void*   (*Reallocator)  (void* original, uint size);
 typedef boolean (*Deallocator)  (void** data);
 
-typedef void    (*MemorySetter) (
+typedef void*   (*MemorySetter) (
     void* destination,
     int value,
-    size_t size
+    uint size
 );
 
 uint64 generateUniqueHash   ();

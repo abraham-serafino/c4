@@ -2,9 +2,11 @@
 
 ExceptionHandler exceptionHandler;
 
-Allocator   allocate;
-Reallocator reallocate;
-Deallocator deallocate;
+Allocator       allocate;
+Allocator       allocate0;
+Reallocator     reallocate;
+Deallocator     deallocate;
+MemorySetter    setMemory;
 
 void defaultExceptionHandler (cstring message) {
     fprintf(stderr, "\n%s\n", message);
@@ -26,6 +28,10 @@ void defaultExceptionHandler (cstring message) {
 // }
 
 void* stdAllocator (uint size) {
+    return malloc(size);
+}
+
+void* stdZeroAllocator (uint size) {
     return calloc(size, 1);
 }
 
@@ -33,22 +39,37 @@ void* stdReallocator (void* original, uint size) {
     return realloc(original, size);
 }
 
-void stdDeallocator (void** data) {
+boolean stdDeallocator (void** data) {
+    boolean result = false;
+
     if (data != null) {
         if (*data != null) {
             free(*data);
+            result = true;
         }
 
         *data = null;
     }
+
+    return result;
+}
+
+void* stdMemorySetter (
+    void* destination,
+    int value,
+    uint size
+) {
+    return memset(destination, value, size);
 }
 
 void initializeStandardDefaults () {
     exceptionHandler = defaultExceptionHandler;
 
     allocate    = stdAllocator;
+    allocate0   = stdZeroAllocator;
     reallocate  = stdReallocator;
     deallocate  = stdDeallocator;
+    setMemory   = stdMemorySetter;
 }
 
 // void initializeGcDefaults () {

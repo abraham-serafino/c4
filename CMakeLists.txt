@@ -15,6 +15,16 @@ set(POINTER_SOURCES
 
 add_executable(pointer-test ${POINTER_SOURCES})
 
+set(MEMORY_POOL_SOURCES
+    src/throwException.c
+    src/pointer.c
+    src/MemoryPool.c
+    src/c4defaults.c
+    src/MemoryPool.test.c
+)
+
+add_executable(memory-test ${MEMORY_POOL_SOURCES})
+
 #set(CMAKE_C_EXTENSIONS OFF)
 
 #add_subdirectory(vendor/libatomic_ops)
