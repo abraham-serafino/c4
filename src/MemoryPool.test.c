@@ -73,6 +73,12 @@ int main() {
         (*currentBlock).offset
     );
 
+    // uncomment to test "Maximum allocation size exceded."
+    // reservePoolMemory(
+    //     pool,
+    //     sizeof("abcdef123456789aaaaa99999")
+    // );
+
     var result = null;
 
     forEach (i, from(0), upTo(6)) {
