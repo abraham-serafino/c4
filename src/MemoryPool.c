@@ -3,18 +3,19 @@
 MemoryPool* createMemoryPool (MemoryPoolOptions options) {
     var blockSize    = options.blockSize;
     var blockCount   = options.blockCount;
+    var wasAllocated = false;
 
     if (blockSize == 0 || blockCount == 0) {
         return null;
     }
 
-    var memorySource    = (MemoryPool*) options.memorySource;
+    var memorySource = (MemoryPool*) options.memorySource;
 
     if (memorySource == null) {
+        wasAllocated = true;
+
         memorySource = (MemoryPool*) allocate(
-            sizeof(MemoryPool) + (
-                (blockSize + sizeof(MemoryBlock)) * blockCount
-            )
+            TOTAL_POOL_SIZE(blockSize, blockCount)
         );
     }
 
@@ -23,23 +24,17 @@ MemoryPool* createMemoryPool (MemoryPoolOptions options) {
         return null;
     }
 
-    *memorySource     = (MemoryPool) {
-        .blockSize      = blockSize,
-        .blockCount     = blockCount,
-        .generation     = 0,
-        .growOnCommand  = options.growOnCommand,
-        .freeBlockIndex = 1,
+    *memorySource           = (MemoryPool) {
+        .blockSize          = blockSize,
+        .blockCount         = blockCount,
+        .growOnCommand      = options.growOnCommand,
+        .wasAllocated       = wasAllocated,
+        .freeBlockIndex     = 1,
 
-        .currentBlock   = (MemoryBlock*) &(
+        .currentBlock       = (MemoryBlock*) &(
             (*memorySource).freeBlocks[0]
         )
     };
-
-    if (blockCount > 1) {
-        (*memorySource).firstFreeBlock = (MemoryBlock*) &(
-            (*memorySource).freeBlocks[0]
-        );
-    }
 
     return memorySource;
 }
@@ -65,8 +60,37 @@ boolean clearMemoryPool (MemoryPool* pool) {
     return result;
 }
 
-boolean destroyMemoryPool (MemoryPool** pool) {
-    return deallocate((void**) pool);
+boolean destroyMemoryPool (MemoryPool** _pool) {
+    if (_pool == null || *_pool == null) {
+        return false;
+    }
+
+    var pool = **_pool;
+    var success = true;
+
+    if (pool.wasAllocated) {
+        return deallocate((void**) _pool);
+    }
+
+    while (success && pool.currentBlock != null) {
+        var block = pool.currentBlock;
+        pool.currentBlock = (*block).next;
+
+        if ((*block).wasAllocated) {
+            success = deallocate((void**) &block);
+        }
+    }
+
+    while (success && pool.currentBlock != null) {
+        var block = pool.firstFreeBlock;
+        pool.firstFreeBlock = (*block).next;
+
+        if ((*block).wasAllocated) {
+            success = deallocate((void**) &block);
+        }
+    }
+
+    return success;
 }
 
 void* reservePoolMemory (MemoryPool* pool, uint size) {
@@ -109,7 +133,7 @@ MemoryBlock* nextFreeBlock (MemoryPool* pool) {
     var freeBlockIndex  = (*pool).freeBlockIndex;
 
     var totalSize = ALIGN(
-        sizeof(MemoryBlock) + (*pool).blockSize
+        TOTAL_BLOCK_SIZE((*pool).blockSize)
     );
 
     if (freeBlockIndex < (*pool).blockCount) {
@@ -121,9 +145,8 @@ MemoryBlock* nextFreeBlock (MemoryPool* pool) {
         (*pool).freeBlockIndex++;
 
     } else if ((*pool).firstFreeBlock != null) {
-        nextBlock = (*pool).firstFreeBlock;
-        (*pool).firstFreeBlock = (*nextBlock).next;
-        (*nextBlock).next = null;
+        nextBlock               = (*pool).firstFreeBlock;
+        (*pool).firstFreeBlock  = (*nextBlock).next;
 
     } else if ((*pool).growOnCommand) {
         nextBlock = allocate(totalSize);
@@ -138,7 +161,6 @@ MemoryBlock* nextFreeBlock (MemoryPool* pool) {
         .next       = (*pool).currentBlock
     };
 
-    (*pool).currentBlock =  nextBlock;
-
-    return nextBlock;
+    (*pool).currentBlock = nextBlock;
+    return  nextBlock;
 }
