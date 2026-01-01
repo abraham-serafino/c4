@@ -1,7 +1,14 @@
+// unity builds ftw
+#include "types.c"
+#include "throwException.c"
+#include <stdio.h>
+#include "c4utils.c"
+#include "pointer.c"
+#include "c4defaults.c"
+#include "MemoryPool.c"
+#include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-#include "MemoryPool.h"
-#include "c4defaults.h"
+#include "stdDefaults.c"
 
 #define BLOCK_SIZE   16
 #define BLOCK_COUNT  5
@@ -32,11 +39,11 @@ int main() {
     debug ("currentBlock: %p\n", currentBlock);
 
     var bob = (char*) reservePoolMemory(pool, sizeof("Bob"));
-    debug ("bob != null: %d\n", bob != null);
+    debug ("bob != null: %d\n", bob != nullptr);
     strncpy(bob, "Bob", sizeof("Bob"));
 
     var alice = (char*) reservePoolMemory(pool, sizeof("Alice"));
-    debug ("alice != null: %d\n", alice != null);
+    debug ("alice != null: %d\n", alice != nullptr);
     strncpy(alice, "Alice", sizeof("Alice"));
 
     debug (
@@ -79,7 +86,7 @@ int main() {
     //     sizeof("abcdef123456789aaaaa99999")
     // );
 
-    var result = null;
+    var result = (char*) nullptr;
 
     forEach (i, from(0), upTo(6)) {
         result = (char*) reservePoolMemory(
@@ -87,14 +94,14 @@ int main() {
             sizeof("abcdef123456789")
         );
 
-        if (result == null) {
+        if (result == nullptr) {
             break;
         }
     }
 
     debug (
         "result == null: %d (%p)\n",
-        result == null,
+        result == nullptr,
         result
     );
 
@@ -107,7 +114,7 @@ int main() {
 
     debug (
         "result == null: %d (%p)\n",
-        result == null,
+        result == nullptr,
         result
     );
 

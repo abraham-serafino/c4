@@ -1,14 +1,14 @@
-#ifndef _C4_H_
-#define _C4_H_
-
-#include "throwException.h"
-#include "types.h"
+// Dependencies:
+//
+// stdio.h
+//
+#ifndef _C4_UTILS_
+#define _C4_UTILS_
 
 #ifndef _C4_NO_DEBUG_
-    #include <stdio.h>
-    #define debug printf
+    #define debug(...) printf(__VA_ARGS__)
 #else
-    #define debug
+    #define debug(...)
 #endif //_C4_NO_DEBUG_
 
 #define from(x) x
@@ -17,8 +17,8 @@
 #define upTo(x)             < (x); ++
 #define downTo(x)           >= (x); --
 
-#define until(...)     while   (! (__VA_ARGS__))
+#define until(...)          while   (! (__VA_ARGS__))
 #define unless(...)         if      (! (__VA_ARGS__))
 #define loop_forever        while   (true)      
 
-#endif // _C4_H_
+#endif // _C4_UTILS_

@@ -1,12 +1,19 @@
-#include "c4.h"
-#include "c4defaults.h"
+#include "types.c"
+#include "throwException.c"
+#include <stdio.h>
+#include "c4utils.c"
+#include "pointer.c"
+#include "c4defaults.c"
+#include <stdlib.h>
+#include <string.h>
+#include "stdDefaults.c"
 
 object (Person_t) {
     cstring name;
     uint age;
 };
 
-defineBoxedType     (Person_t, Person);
+defineBoxedType (Person_t, Person);
 
 Person newPerson (cstring name, uint age) {
     var result = heap  (Person, {});

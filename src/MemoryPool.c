@@ -1,4 +1,51 @@
-#include "MemoryPool.h"
+// Dependencies:
+//
+// throwException.c
+// types.c
+// c4Utils.c
+//
+
+#ifndef _C4_MEMORY_POOL_
+#define _C4_MEMORY_POOL_
+
+#define ALIGN(value) (\
+     ((value)           + (alignof(void*))  - 1) & \
+    ~((alignof(void*))                      - 1) \
+)
+
+#define TOTAL_BLOCK_SIZE(blockSize) \
+    sizeof(MemoryBlock) + (blockSize)
+
+#define TOTAL_POOL_SIZE(blockSize, blockCount) (\
+    sizeof(MemoryPool) + \
+    TOTAL_BLOCK_SIZE(blockSize) * blockCount \
+)
+
+object (MemoryBlock) {
+  uint          offset;
+  boolean       wasAllocated;
+  MemoryBlock*  next;
+  byte          data[];
+};
+
+object (MemoryPool) {
+  uint          blockSize;
+  uint          blockCount;
+  boolean       growOnCommand;
+  boolean       wasAllocated;
+  uint          generation;
+  uint          freeBlockIndex;
+  MemoryBlock*  currentBlock;
+  MemoryBlock*  firstFreeBlock;
+  byte          freeBlocks[];
+};
+
+object (MemoryPoolOptions) {
+  uint          blockSize;
+  uint          blockCount;
+  boolean       growOnCommand;
+  byte*         memorySource;
+};
 
 MemoryPool* createMemoryPool (MemoryPoolOptions options) {
     var blockSize    = options.blockSize;
@@ -6,12 +53,12 @@ MemoryPool* createMemoryPool (MemoryPoolOptions options) {
     var wasAllocated = false;
 
     if (blockSize == 0 || blockCount == 0) {
-        return null;
+        return nullptr;
     }
 
     var memorySource = (MemoryPool*) options.memorySource;
 
-    if (memorySource == null) {
+    if (memorySource == nullptr) {
         wasAllocated = true;
 
         memorySource = (MemoryPool*) allocate(
@@ -19,9 +66,9 @@ MemoryPool* createMemoryPool (MemoryPoolOptions options) {
         );
     }
 
-    if (memorySource == null) {
+    if (memorySource == nullptr) {
         throwException("Insufficient memory.");
-        return null;
+        return nullptr;
     }
 
     *memorySource           = (MemoryPool) {
@@ -39,97 +86,12 @@ MemoryPool* createMemoryPool (MemoryPoolOptions options) {
     return memorySource;
 }
 
-boolean clearMemoryPool (MemoryPool* pool) {
-    if (pool == null) {
-        return false;
-    }
-
-    until ((*pool).currentBlock == null) {
-        var block               = (*pool).currentBlock;
-        (*pool).currentBlock    = (*block).next;
-        (*block).next           = (*pool).firstFreeBlock;
-        (*pool).firstFreeBlock  = block;
-    }
-
-    boolean result = nextFreeBlock(pool) != null;
-
-    if (result) {
-        (*pool).generation++;
-    }
-
-    return result;
-}
-
-boolean destroyMemoryPool (MemoryPool** _pool) {
-    if (_pool == null || *_pool == null) {
-        return false;
-    }
-
-    var pool = **_pool;
-    var success = true;
-
-    if (pool.wasAllocated) {
-        return deallocate((void**) _pool);
-    }
-
-    while (success && pool.currentBlock != null) {
-        var block = pool.currentBlock;
-        pool.currentBlock = (*block).next;
-
-        if ((*block).wasAllocated) {
-            success = deallocate((void**) &block);
-        }
-    }
-
-    while (success && pool.currentBlock != null) {
-        var block = pool.firstFreeBlock;
-        pool.firstFreeBlock = (*block).next;
-
-        if ((*block).wasAllocated) {
-            success = deallocate((void**) &block);
-        }
-    }
-
-    return success;
-}
-
-void* reservePoolMemory (MemoryPool* pool, uint size) {
-    if (pool == null) {
-      return allocate0(size);
-    }
-
-    var blockSize = (*pool).blockSize;
-
-    if (size > blockSize) {
-        throwException("Maximum allocation size exceeded.");
-        return null;
-    }
-
-    var currentBlock    = (*pool).currentBlock;
-    var offset          = ALIGN((*currentBlock).offset);
-
-    if (currentBlock == null || blockSize - offset < size) {
-        currentBlock = nextFreeBlock(pool);
-        offset = 0;
-    }
-
-    if (currentBlock == null) {
-        return null;
-    }
-
-    var ptr = (void*)  &((*currentBlock).data[offset]);
-    setMemory (ptr, 0, size);
-    (*currentBlock).offset += size;
-
-    return ptr;
-}
-
 MemoryBlock* nextFreeBlock (MemoryPool* pool) {
-    if (pool == null) {
-        return null;
+    if (pool == nullptr) {
+        return nullptr;
     }
 
-    var nextBlock       = (MemoryBlock*) null;
+    var nextBlock       = (MemoryBlock*) nullptr;
     var freeBlockIndex  = (*pool).freeBlockIndex;
 
     var totalSize = ALIGN(
@@ -144,7 +106,7 @@ MemoryBlock* nextFreeBlock (MemoryPool* pool) {
 
         (*pool).freeBlockIndex++;
 
-    } else if ((*pool).firstFreeBlock != null) {
+    } else if ((*pool).firstFreeBlock != nullptr) {
         nextBlock               = (*pool).firstFreeBlock;
         (*pool).firstFreeBlock  = (*nextBlock).next;
 
@@ -152,8 +114,8 @@ MemoryBlock* nextFreeBlock (MemoryPool* pool) {
         nextBlock = allocate(totalSize);
     }
 
-    if (nextBlock == null) {
-        return null;
+    if (nextBlock == nullptr) {
+        return nullptr;
     }
 
     *nextBlock      = (MemoryBlock) {
@@ -164,3 +126,90 @@ MemoryBlock* nextFreeBlock (MemoryPool* pool) {
     (*pool).currentBlock = nextBlock;
     return  nextBlock;
 }
+
+boolean clearMemoryPool (MemoryPool* pool) {
+    if (pool == nullptr) {
+        return false;
+    }
+
+    until ((*pool).currentBlock == nullptr) {
+        var block               = (*pool).currentBlock;
+        (*pool).currentBlock    = (*block).next;
+        (*block).next           = (*pool).firstFreeBlock;
+        (*pool).firstFreeBlock  = block;
+    }
+
+    boolean result = nextFreeBlock(pool) != nullptr;
+
+    if (result) {
+        (*pool).generation++;
+    }
+
+    return result;
+}
+
+boolean destroyMemoryPool (MemoryPool** _pool) {
+    if (_pool == nullptr || *_pool == nullptr) {
+        return false;
+    }
+
+    var pool = **_pool;
+    var success = true;
+
+    if (pool.wasAllocated) {
+        return deallocate((void**) _pool);
+    }
+
+    while (success && pool.currentBlock != nullptr) {
+        var block = pool.currentBlock;
+        pool.currentBlock = (*block).next;
+
+        if ((*block).wasAllocated) {
+            success = deallocate((void**) &block);
+        }
+    }
+
+    while (success && pool.currentBlock != nullptr) {
+        var block = pool.firstFreeBlock;
+        pool.firstFreeBlock = (*block).next;
+
+        if ((*block).wasAllocated) {
+            success = deallocate((void**) &block);
+        }
+    }
+
+    return success;
+}
+
+void* reservePoolMemory (MemoryPool* pool, uint size) {
+    if (pool == nullptr) {
+      return allocate0(size);
+    }
+
+    var blockSize = (*pool).blockSize;
+
+    if (size > blockSize) {
+        throwException("Maximum allocation size exceeded.");
+        return nullptr;
+    }
+
+    var currentBlock    = (*pool).currentBlock;
+    var offset          = ALIGN((*currentBlock).offset);
+
+    if (currentBlock == null || blockSize - offset < size) {
+        currentBlock = nextFreeBlock(pool);
+        offset = 0;
+    }
+
+    if (currentBlock == nullptr) {
+        return nullptr;
+    }
+
+    var ptr = (void*)  &((*currentBlock).data[offset]);
+    setMemory (ptr, 0, size);
+    (*currentBlock).offset += size;
+
+    return ptr;
+}
+
+#endif // _C4_MEMORY_POOL_
