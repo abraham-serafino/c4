@@ -1,53 +1,7 @@
-// Dependencies:
-//
-// throwException.c
-// types.c
-//
-
 #ifndef _C4_POINTER_
 #define _C4_POINTER_
 
-typedef void*   (*Allocator) (uint size);
-typedef void*   (*Reallocator) (void* original, uint size);
-typedef boolean (*Deallocator) (void** data);
-
-typedef void*   (*MemorySetter) (
-    void*       destination,
-    int         value,
-    uint        size
-);
-
-extern Allocator    allocate;
-extern Allocator    allocate0;
-extern Reallocator  reallocate;
-extern Deallocator  deallocate;
-extern MemorySetter setMemory;
-
-uint64  generateUniqueHash  () {
-    static uint64 currentHash = 1;
-
-    return __atomic_add_fetch(
-        &currentHash,
-        1,
-        __ATOMIC_SEQ_CST
-    );
-}
-
-void    setAllocator        (Allocator allocator) {
-    allocate    = allocator;
-}
-
-void    setZeroAllocator    (Allocator allocator) {
-    allocate0   = allocator;
-}
-
-void    setReallocator     (Reallocator reallocator) {
-    reallocate  = reallocator;
-}
-
-void    setDeallocator     (Deallocator deallocator) {
-    deallocate  = deallocator;
-}
+#include "types.c"
 
 #define defineBoxedType(T, name) \
     typedef struct { \
@@ -104,21 +58,21 @@ void    setDeallocator     (Deallocator deallocator) {
     (ptr).data == nullptr || (ptr).data->hash != (ptr).hash \
 )
 
-defineBoxedType     (int,        Int);
-defineBoxedType     (int8,       Int8);
-defineBoxedType     (uint8,      Uint8);
-defineBoxedType     (byte,       Byte);
-defineBoxedType     (boolean,    Boolean);
-defineBoxedType     (int16,      Int16);
-defineBoxedType     (uint16,     Uint16);
-defineBoxedType     (int32,      Int32);
-defineBoxedType     (natural,    Natural);
-defineBoxedType     (double,     Double);
-defineBoxedType     (number,     Number);
-defineBoxedType     (int64,      Int64);
-defineBoxedType     (uint64,     Uint64);
-defineBoxedType     (superlong,  Superlong);
-defineBoxedType     (superulong, Superulong);
-defineBoxedType     (char,       Char);
+// defineBoxedType     (int,        Int);
+// defineBoxedType     (int8,       Int8);
+// defineBoxedType     (uint8,      Uint8);
+// defineBoxedType     (byte,       Byte);
+// defineBoxedType     (boolean,    Boolean);
+// defineBoxedType     (int16,      Int16);
+// defineBoxedType     (uint16,     Uint16);
+// defineBoxedType     (int32,      Int32);
+// defineBoxedType     (natural,    Natural);
+// defineBoxedType     (double,     Double);
+// defineBoxedType     (number,     Number);
+// defineBoxedType     (int64,      Int64);
+// defineBoxedType     (uint64,     Uint64);
+// defineBoxedType     (superlong,  Superlong);
+// defineBoxedType     (superulong, Superulong);
+// defineBoxedType     (char,       Char);
 
 #endif // _C4_POINTER_
