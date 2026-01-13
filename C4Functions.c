@@ -26,6 +26,6 @@ object (C4Functions) {
     UniqueNumberGenerator   generateUniqueNumber;
 };
 
-ExceptionHandler throwException;
+extern ExceptionHandler throwException;
 
 #endif // _C4_DEFAULTS_

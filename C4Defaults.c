@@ -65,8 +65,13 @@ void std_throwException (uint errorCode) {
             break;
 
         case ErrorCodes.RequiredFunctionsMissing:
-            message =  "You must specify setMemory() and"
-                      " generateUniqueNumber() functions.";
+            message =    "Pool is missing required"
+                        " generateUniqueNumber() function.";
+
+        case ErrorCodes.InvalidHandle:
+            message = "Invalid handle.";
+            break;
+
         default:
             return;
     }
@@ -75,17 +80,15 @@ void std_throwException (uint errorCode) {
     exit(1);
 }
 
-C4Functions getStandardDefaults () {
-    throwException              = std_throwException;
+const C4Functions C4Defaults = {
+    .allocate                   = std_allocate,
+    .reallocate                 = std_reallocate,
+    .deallocate                 = std_deallocate,
+    .setMemory                  = std_setMemory,
+    .throwException             = std_throwException,
+    .generateUniqueNumber       = std_generateUniqueNumber
+};
 
-    return (C4Functions) {
-        .allocate               = std_allocate,
-        .reallocate             = std_reallocate,
-        .deallocate             = std_deallocate,
-        .setMemory              = std_setMemory,
-        .throwException         = std_throwException,
-        .generateUniqueNumber   = std_generateUniqueNumber
-    };
-}
+ExceptionHandler throwException = std_throwException;
 
 #endif // _C4_STD_DEFAULTS_

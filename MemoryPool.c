@@ -4,13 +4,14 @@
 #include "types.c"
 #include "loops.c"
 #include "C4Functions.c"
-#include <limits.h>
+#include "TicketLock.c"
 
-#define ErrorCodeMap(X) \
-    X(Success,                  0)  \
-    X(InvalidPool,              1)  \
-    X(PageOverflow,             2)  \
-    X(RequiredFunctionsMissing, 3)
+#define ErrorCodeMap(X)                 \
+    X(Success,                  0)      \
+    X(InvalidPool,              1)      \
+    X(PageOverflow,             2)      \
+    X(RequiredFunctionsMissing, 3)      \
+    X(InvalidHandle,            4)
 
 defineStaticMap(ErrorCodeMap, ErrorCodes);
 
@@ -50,6 +51,8 @@ object              (MemoryPoolOptions) {
     C4Functions*    functions;
 };
 
+static TicketLock memoryPoolLock = {};
+
 MemoryPage* reservePages (
     MemoryPool* pool,
     uint        pageCount
@@ -69,17 +72,21 @@ MemoryPage* reservePages (
     }
 
     if (
-        (*pool).functions != nullptr &&
-        (*(*pool).functions).allocate != nullptr
+          (*pool).functions             != nullptr &&
+        (*(*pool).functions).allocate   != nullptr
     ) {
+        acquireTicketLock(&memoryPoolLock);
+
         var region = (*(*pool).functions).allocate(
             pageCount * ALIGN(
                 TOTAL_PAGE_SIZE((*pool).pageSize)
             )
         );
+    
+        releaseTicketLock(&memoryPoolLock);
 
         if (region == nullptr) {
-            return nullptr;
+            return (MemoryPage*) nullptr;
         }
 
         count_down (from(pageCount - 1), to(0), as(i)) {
@@ -91,25 +98,34 @@ MemoryPage* reservePages (
         }
 
         if (firstPage == nullptr) {
-            return nullptr;
+            return (MemoryPage*) nullptr;
         }
 
     } else if ((*pool).firstFreePage != nullptr) {
+        acquireTicketLock(&memoryPoolLock);
+
         firstPage = (*pool).firstFreePage;
         var nextPage = firstPage;
 
-        count_up (from(0), to(pageCount), as(i)) {
+        count_up (from(1), to(pageCount), _) {
             if (nextPage == nullptr) {
-                return nullptr;
+                releaseTicketLock(&memoryPoolLock);
+                return (MemoryPage*) nullptr;
             }
 
             nextPage = (*nextPage).next;
         }
 
-        (*pool).firstFreePage = nextPage;
+        (*pool).firstFreePage = (*nextPage).next;
+        releaseTicketLock(&memoryPoolLock);
+
+        (*nextPage).next = nullptr;
     }
 
-    (*firstPage).offset = 0;
+    if (firstPage != nullptr) {
+        (*firstPage).offset = 0;
+    }
+
     return       firstPage;
 }
 
@@ -130,7 +146,6 @@ MemoryPool _createMemoryPool (MemoryPoolOptions options) {
 
     } else if (
         options.functions                           == nullptr ||
-        (*options.functions).setMemory              == nullptr ||
         (*options.functions).generateUniqueNumber   == nullptr
     ) {
         throwException(ErrorCodes.RequiredFunctionsMissing);
@@ -163,6 +178,7 @@ object (PoolItem) {
 
 object (PoolHandle) {
     uint        generation;
+    MemoryPage* page;
     PoolItem*   item;
 };
 
@@ -179,6 +195,13 @@ PoolHandle _reservePoolBytes (ReserveBytesOptions options) {
     if (options.pool == nullptr) {
       throwException(ErrorCodes.InvalidPool);
       return (PoolHandle) {};
+    }
+
+    if (
+          (*options.pool).functions                         != nullptr &&
+        (*(*options.pool).functions).generateUniqueNumber   == nullptr
+    ) {
+        throwException(ErrorCodes.RequiredFunctionsMissing);
     }
 
     if (options.size == 0) {
@@ -209,44 +232,40 @@ PoolHandle _reservePoolBytes (ReserveBytesOptions options) {
         (currentPage == nullptr || (pageSize - offset) < totalSize) &&
         (*pool).autoResize
     ) {
-        currentPage             = reservePage(pool);
+        currentPage = reservePage(pool);
 
         if (currentPage == nullptr) {
-            offset              = 0;
-            (*pool).currentPage = currentPage;
+            return (PoolHandle) {};
         }
+
+        (*currentPage).offset = 0;
+
+        (*currentPage).generation
+            = (*(*pool).functions).generateUniqueNumber();
+
+        (*pool).currentPage = currentPage;
     }
 
-    if (currentPage == nullptr) {
-        return (PoolHandle) {};
-    }
-
-    var item        = (PoolItem*) &((*currentPage).data[offset]);
-
-    var generation  = __atomic_add_fetch(
-        &(*currentPage).generation,
-        1,
-        __ATOMIC_SEQ_CST
-    );
-
-    (*(PoolItem*) item) .generation = generation;
-    (*currentPage)      .offset     += totalSize;
+    var item = (PoolItem*) &((*currentPage).data[offset]);
 
     if (
-        options.setToZero                           &&
-        (*pool).functions               != nullptr  &&
+          options.setToZero                         &&
+          (*pool).functions             != nullptr  &&
         (*(*pool).functions).setMemory  != nullptr
     ) {
 
         (*(*pool).functions).setMemory(
             & (*item).data,
             0,
-            totalSize
+            size
         );
     }
 
+    (*currentPage).offset       += totalSize;
+
     return (PoolHandle) {
-        .generation     = generation,
+        .generation     = (*currentPage).generation,
+        .page           = currentPage,
         .item           = item
     };
 }
@@ -267,36 +286,61 @@ PoolHandle _reservePoolBytes (ReserveBytesOptions options) {
     }                                                   \
 )
 
-bool returnPages (
-    MemoryPool* pool,
-    MemoryPage* firstPage
-) {
+#define deref(typedHandle) ({                                               \
+    auto _typedHandle   = (typedHandle);                                    \
+    auto _handle        = _typedHandle.handle;                              \
+                                                                            \
+    (                                                                       \
+        _handle.page != nullptr                             &&              \
+        _handle.item != nullptr                             &&              \
+        (*_handle.page).generation == _handle.generation    &&              \
+        (*_handle.item).generation == _handle.generation                    \
+    )                                                                       \
+        ? /* return */ (typeof(&typedHandle._type[0])) (*_handle.item).data \
+        : (                                                                 \
+            throwException(ErrorCodes.InvalidHandle),                       \
+            /* return */ nullptr                                            \
+        );                                                                  \
+})
+
+bool returnPages (MemoryPool* pool, MemoryPage* firstPage) {
     if (pool == nullptr) {
         return false;
     }
 
+    acquireTicketLock(&memoryPoolLock);
     var page    = firstPage;
-    var result  = true;
 
-    until (page == nullptr) {
-        var nextPage = (*page).next;
+    if (
+          (*pool).functions             != nullptr &&
+        (*(*pool).functions).deallocate != nullptr
+    ) {
+        until (page == nullptr) {
+            var nextPage = (*page).next;
+            (*page).generation = 0;
 
-        if (
-            (*pool).functions != nullptr                &&
-            (*(*pool).functions).deallocate != nullptr
-        ) {
-            result = (*(*pool).functions)
-                .deallocate((void**) &page);
+            if (! (*(*pool).functions).deallocate((void**) &page)) {
+                releaseTicketLock(&memoryPoolLock);
+                return false;
+            }
 
-        } else {
-            (*page).next = (*pool).firstFreePage;
-            (*pool).firstFreePage = page;
+            page = nextPage;
         }
 
-        page = nextPage;
+    } else {
+        until (page == nullptr) {
+            var nextPage            = (*page).next;
+
+            (*page).generation      = 0;
+            (*page).next            = (*pool).firstFreePage;
+            (*pool).firstFreePage   = page;
+
+            page = nextPage;
+        }
     }
 
-    return result;
+    releaseTicketLock(&memoryPoolLock);
+    return true;
 }
 
 bool clearMemoryPool (MemoryPool* pool) {
