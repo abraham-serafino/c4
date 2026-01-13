@@ -357,6 +357,8 @@ bool clearMemoryPool (MemoryPool* pool) {
         return returnPages(pool, (*pool).currentPage);
     }
 
+    acquireTicketLock(&memoryPoolLock);
+
     until ((*pool).currentPage == nullptr) {
         var page = (*pool).currentPage;
         (*pool).currentPage    = (*page).next;
@@ -364,12 +366,7 @@ bool clearMemoryPool (MemoryPool* pool) {
         (*pool).firstFreePage  = page;
     }
 
-    var firstFreePage           = reservePage(pool);
-
-    if (firstFreePage != nullptr) {
-        (*pool).currentPage     = firstFreePage;
-    }
-
+    releaseTicketLock(&memoryPoolLock);
     return true;
 }
 
