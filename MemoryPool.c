@@ -247,6 +247,7 @@ PoolHandle _reservePoolBytes (ReserveBytesOptions options) {
     }
 
     var item = (PoolItem*) &((*currentPage).data[offset]);
+    (*item).generation = (*currentPage).generation;
 
     if (
           options.setToZero                         &&
