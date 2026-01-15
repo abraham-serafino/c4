@@ -20,8 +20,10 @@ defineStaticMap(ErrorCodeMap, ErrorCodes);
     ~((alignof(void*)) - 1)             \
 )
 
+#define PAGE_HEADER_SIZE ALIGN(sizeof(MemoryPage))
+
 #define TOTAL_PAGE_SIZE(pageSize)       \
-    sizeof(MemoryPage) + (pageSize)
+    ALIGN(PAGE_HEADER_SIZE + (pageSize))
 
 typedef struct MemoryPool MemoryPool;
 
@@ -40,18 +42,32 @@ object              (MemoryPool) {
     uint            pageCount;
     uint            pageSize;
     C4Functions*    functions;
+    TicketLock      lock;
 };
 
-object              (MemoryPoolOptions) {
-    MemoryPage*     firstPage;
-    MemoryPool*     parentPool;
-    bool            autoResize;
-    uint            pageCount;
-    uint            pageSize;
-    C4Functions*    functions;
-};
+MemoryPage* cutIntoPages (
+    byte*   region,
+    uint    pageCount,
+    uint    pageSize
+) {
+    var totalPageSize   = TOTAL_PAGE_SIZE(pageSize);
+    var firstPage       = (MemoryPage*) nullptr;
+    var raw     = region;
 
-static TicketLock memoryPoolLock = {};
+    count_down (from(pageCount - 1), to(0), as(i)) {
+        var next = (MemoryPage* ) (raw + (i * totalPageSize));
+
+        *next           = (MemoryPage) {
+            .next       = firstPage,
+            .generation = 0,
+            .offset     = 0
+        };
+
+        firstPage = next;
+    }
+
+    return firstPage;
+}
 
 MemoryPage* reservePages (
     MemoryPool* pool,
@@ -62,10 +78,7 @@ MemoryPage* reservePages (
     }
 
     var firstPage        = (MemoryPage*) nullptr;
-
-    var totalSize = ALIGN(
-        TOTAL_PAGE_SIZE((*pool).pageSize)
-    );
+    var totalSize = TOTAL_PAGE_SIZE((*pool).pageSize);
 
     if (totalSize == 0) {
         return nullptr;
@@ -75,7 +88,7 @@ MemoryPage* reservePages (
           (*pool).functions             != nullptr &&
         (*(*pool).functions).allocate   != nullptr
     ) {
-        acquireTicketLock(&memoryPoolLock);
+        acquireTicketLock(&(*pool).lock);
 
         var region = (*(*pool).functions).allocate(
             pageCount * ALIGN(
@@ -83,33 +96,23 @@ MemoryPage* reservePages (
             )
         );
     
-        releaseTicketLock(&memoryPoolLock);
+        releaseTicketLock(&(*pool).lock);
 
         if (region == nullptr) {
             return (MemoryPage*) nullptr;
         }
 
-        count_down (from(pageCount - 1), to(0), as(i)) {
-            ((MemoryPage*) region)[i] = (MemoryPage) {
-                .next = firstPage
-            };
-
-            firstPage = &((MemoryPage*) region)[i];
-        }
-
-        if (firstPage == nullptr) {
-            return (MemoryPage*) nullptr;
-        }
+        firstPage = cutIntoPages(region, pageCount, (*pool).pageSize);
 
     } else if ((*pool).firstFreePage != nullptr) {
-        acquireTicketLock(&memoryPoolLock);
+        acquireTicketLock(&(*pool).lock);
 
         firstPage = (*pool).firstFreePage;
         var nextPage = firstPage;
 
         count_up (from(1), to(pageCount), _) {
             if (nextPage == nullptr) {
-                releaseTicketLock(&memoryPoolLock);
+                releaseTicketLock(&(*pool).lock);
                 return (MemoryPage*) nullptr;
             }
 
@@ -117,7 +120,7 @@ MemoryPage* reservePages (
         }
 
         (*pool).firstFreePage = (*nextPage).next;
-        releaseTicketLock(&memoryPoolLock);
+        releaseTicketLock(&(*pool).lock);
 
         (*nextPage).next = nullptr;
     }
@@ -132,20 +135,18 @@ MemoryPage* reservePages (
 #define reservePage(pool) \
     reservePages(pool, 1)
 
+object              (MemoryPoolOptions) {
+    byte*           useBuffer;
+    MemoryPool*     parentPool;
+    bool            autoResize;
+    uint            pageCount;
+    uint            pageSize;
+    C4Functions*    functions;
+};
+
 MemoryPool _createMemoryPool (MemoryPoolOptions options) {
-    var firstPage   = (MemoryPage*) nullptr;
- 
-    if (options.firstPage) {
-        firstPage   = options.firstPage;
-
-    } else if (options.parentPool) {
-        firstPage   = reservePages(
-            options.parentPool,
-            options.pageCount
-        );
-
-    } else if (
-        options.functions                           == nullptr ||
+    if (
+          options.functions                         == nullptr ||
         (*options.functions).generateUniqueNumber   == nullptr
     ) {
         throwException(ErrorCodes.RequiredFunctionsMissing);
@@ -155,6 +156,36 @@ MemoryPool _createMemoryPool (MemoryPoolOptions options) {
     if (! options.pageSize || ! options.pageCount) {
         return (MemoryPool) {};
     }
+
+    var firstPage   = (MemoryPage*) nullptr;
+    var pool = (MemoryPool) {};
+
+    if (options.useBuffer != nullptr) {
+        firstPage   = cutIntoPages(
+            options.useBuffer,
+            options.pageCount,
+            options.pageSize
+        );
+
+    } else if (
+          options.functions             != nullptr &&
+        (*options.functions).allocate   != nullptr
+    ) {
+        firstPage = reservePages(
+            & (MemoryPool) {
+                .pageSize = options.pageSize,
+                .functions = options.functions
+            }, 
+            options.pageCount
+        );
+
+    } else if (options.parentPool) {
+        firstPage   = reservePages(
+            options.parentPool,
+            options.pageCount
+        );
+
+    } 
 
     var result  = (MemoryPool) {
         .firstFreePage      = firstPage,
@@ -309,7 +340,7 @@ bool returnPages (MemoryPool* pool, MemoryPage* firstPage) {
         return false;
     }
 
-    acquireTicketLock(&memoryPoolLock);
+    acquireTicketLock(&(*pool).lock);
     var page    = firstPage;
 
     if (
@@ -321,7 +352,7 @@ bool returnPages (MemoryPool* pool, MemoryPage* firstPage) {
             (*page).generation = 0;
 
             if (! (*(*pool).functions).deallocate((void**) &page)) {
-                releaseTicketLock(&memoryPoolLock);
+                releaseTicketLock(&(*pool).lock);
                 return false;
             }
 
@@ -340,7 +371,7 @@ bool returnPages (MemoryPool* pool, MemoryPage* firstPage) {
         }
     }
 
-    releaseTicketLock(&memoryPoolLock);
+    releaseTicketLock(&(*pool).lock);
     return true;
 }
 
@@ -358,7 +389,7 @@ bool clearMemoryPool (MemoryPool* pool) {
         return returnPages(pool, (*pool).currentPage);
     }
 
-    acquireTicketLock(&memoryPoolLock);
+    acquireTicketLock(&(*pool).lock);
 
     until ((*pool).currentPage == nullptr) {
         var page = (*pool).currentPage;
@@ -367,7 +398,7 @@ bool clearMemoryPool (MemoryPool* pool) {
         (*pool).firstFreePage  = page;
     }
 
-    releaseTicketLock(&memoryPoolLock);
+    releaseTicketLock(&(*pool).lock);
     return true;
 }
 

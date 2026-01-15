@@ -20,14 +20,14 @@ byte globalBuffer[
 int main() {
     initializeStandardDefaults();
 
-    var pool            = createMemoryPool((MemoryPoolOptions) {
+    var pool            = createMemoryPool(
         .blockSize      = BLOCK_SIZE,
         .blockCount     = BLOCK_COUNT,
         .memorySource   = globalBuffer,
 
         // technically unnecessary - including for documentation
         .growOnCommand  = false 
-    });
+    );
 
     MemoryBlock* currentBlock = (*pool).currentBlock;
 
