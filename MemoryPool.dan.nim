@@ -249,9 +249,8 @@ fn returnAll (
     return true
 }
 
-fn clear (
-    memoryPool = (MemoryPool) null
-) -> boolean {
+fn clear (memoryPool = (MemoryPool) null)
+        -> boolean {
 
     if (memoryPool.isNull()) { return false }
 
@@ -335,9 +334,8 @@ fn reserve (
     }
 }
 
-fn @unbox (
-    handle = (PoolHandle of T) {}
-) -> ref T {
+fn @unbox (handle = (PoolHandle of T) {})
+        -> ref T {
 
     if (handle.page.isNull()) or handle.item.isNull() {
         throw ErrorCode.InvalidHandle
@@ -393,9 +391,8 @@ private fn split (
 ; #define align(value) \
 ;    (((value) + (ALIGNED_POINTER) - 1) & ~(ALIGNED_POINTER) - 1)
 
-private fn @TOTAL_PAGE_SIZE (
-    fromOriginal: pageSize = 0
-) -> uint32 {
+private fn @TOTAL_PAGE_SIZE (fromOriginal: pageSize = 0)
+        -> uint32 {
 
     resolve @align(sizeof(MemoryPage) + @align(pageSize))
 }
