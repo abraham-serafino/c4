@@ -88,7 +88,9 @@ object MemoryPool {
     ref firstFreePage   = (MemoryPage) null,
     ref functions       = (C4.Functions) null,
 
-    autoResize          = false, ; 'true' and 'false' are 'bit' values
+    ;; 'true' and 'false' are 'bit' values
+    autoResize          = false,
+
     pageCount           = 0,
     pageSize            = 0
 }
@@ -155,7 +157,7 @@ fn init (
     }
 }
 
-fn reserve(
+fn reserve (
     pages:          pageCount   = (ArraySize) 0
     ref fromPool:   pool        = (MemoryPool) null,
 
@@ -286,8 +288,8 @@ fn reserve (
     if (bytes == 0) { return {} }
 
     ; Unlike Javascript, destructuring does not result in a copy.
-    ; Instead, it's like a limited "using" or "with" clause, that auto-
-    ; expands 'pageSize' to 'pool.pageSize', 'currentPage' to
+    ; Instead, it is like a limited 'using' or 'with' clause, that
+    ; auto-expands 'pageSize' to 'pool.pageSize', 'currentPage' to
     ; 'pool.currentPage', etc.
 
     var { pageSize, currentPage, autoResize, functions } = pool
@@ -333,7 +335,7 @@ fn reserve (
     }
 }
 
-fn @unbox(
+fn @unbox (
     handle = (PoolHandle of T) {}
 ) -> ref T {
 
@@ -351,7 +353,7 @@ fn @unbox(
     resolve handle.item.data
 }
 
-private fn split(
+private fn split (
     ref region              = (byte) null,
     intoPages:  pageCount   = 0,
     ofSize:     pageSize    = (ArraySize) 0,
@@ -391,7 +393,7 @@ private fn split(
 ; #define align(value) \
 ;    (((value) + (ALIGNED_POINTER) - 1) & ~(ALIGNED_POINTER) - 1)
 
-private fn @TOTAL_PAGE_SIZE(
+private fn @TOTAL_PAGE_SIZE (
     fromOriginal: pageSize = 0
 ) -> uint32 {
 
